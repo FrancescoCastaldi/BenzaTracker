@@ -34,19 +34,7 @@ class BenzaTrackerApp(tb.Window):
     def _build_layout(self) -> None:
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
-
-        # ``ScrolledFrame`` changed its public API across ttkbootstrap releases.
-        # Older versions exposed an ``innerframe`` attribute while newer ones use
-        # ``scrollable_frame``.  To remain compatible with both (and avoid
-        # crashing if neither exists), we fall back to the frame instance
-        # itself.  This mirrors the behaviour of ttkbootstrap's own examples and
-        # prevents ``AttributeError`` on environments that still ship the older
-        # attribute name.
-        container = getattr(main_frame, "scrollable_frame", None)
-        if container is None:
-            container = getattr(main_frame, "innerframe", None)
-        if container is None:
-            container = main_frame
+        container = main_frame.innerframe
 
         self._build_form(container)
         self._build_summary(container)
