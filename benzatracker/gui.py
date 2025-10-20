@@ -34,40 +34,12 @@ class BenzaTrackerApp(tb.Window):
     def _build_layout(self) -> None:
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
-
-        # Some ttkbootstrap releases renamed the internal container attribute;
-        # create a backwards-compatible alias so previously cached bytecode or
-        # stale installs that still expect ``innerframe`` continue to work once
-        # the updated script is copied over.
-        if not hasattr(main_frame, "innerframe"):
-            fallback = self._resolve_scroll_container(main_frame)
-            setattr(main_frame, "innerframe", fallback)
-        else:
-            fallback = main_frame.innerframe
-
-        container = fallback
+        container = main_frame.innerframe
 
         self._build_form(container)
         self._build_summary(container)
         self._build_table(container)
         self._build_chart(container)
-
-    @staticmethod
-    def _resolve_scroll_container(frame: ScrolledFrame) -> tk.Widget:
-        """Return the widget that should host scrollable content."""
-
-        # ``ScrolledFrame``'s public API has changed names across ttkbootstrap
-        # releases: early versions used ``innerframe``, intermediate builds
-        # switched to ``scrollable_frame``, and the latest versions expose the
-        # content as ``container`` while delegating geometry methods directly on
-        # the scrolled frame itself.  Probe the known attribute names in order of
-        # preference and fall back to the frame so we always return a widget that
-        # accepts child elements.
-        for attr in ("scrollable_frame", "innerframe", "container", "frame", "_frame"):
-            widget = getattr(frame, attr, None)
-            if isinstance(widget, tk.Misc):
-                return widget
-        return frame
 
     def _build_form(self, parent: tk.Widget) -> None:
         section = tb.Frame(parent, padding=(15, 10))
