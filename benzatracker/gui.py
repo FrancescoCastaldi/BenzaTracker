@@ -34,14 +34,7 @@ class BenzaTrackerApp(tb.Window):
     def _build_layout(self) -> None:
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
-
-        # ``ScrolledFrame`` behaves like a normal ``Frame`` in modern
-        # ttkbootstrap releases, while older builds exposed the scrollable
-        # widget through the ``innerframe`` attribute.  Building our own content
-        # frame inside the scrolled frame works across both generations without
-        # relying on private attribute names.
-        container = tb.Frame(main_frame)
-        container.pack(fill=BOTH, expand=True)
+        container = main_frame.innerframe
 
         self._build_form(container)
         self._build_summary(container)
