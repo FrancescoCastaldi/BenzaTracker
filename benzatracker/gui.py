@@ -34,15 +34,12 @@ class BenzaTrackerApp(tb.Window):
     def _build_layout(self) -> None:
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
+        container = main_frame.innerframe
 
-        # ``ScrolledFrame`` already behaves like a ``Frame`` so we can attach
-        # our dashboard sections directly to it without peeking at internal
-        # attributes that have changed across ttkbootstrap releases.  This
-        # keeps the layout compatible regardless of the installed version.
-        self._build_form(main_frame)
-        self._build_summary(main_frame)
-        self._build_table(main_frame)
-        self._build_chart(main_frame)
+        self._build_form(container)
+        self._build_summary(container)
+        self._build_table(container)
+        self._build_chart(container)
 
     def _build_form(self, parent: tk.Widget) -> None:
         section = tb.Frame(parent, padding=(15, 10))
@@ -188,6 +185,7 @@ class BenzaTrackerApp(tb.Window):
         self._refresh_dashboard()
         messagebox.showinfo("Rifornimento salvato", "Il rifornimento è stato registrato correttamente")
 
+    # Helpers ----------------------------------------------------------------
     def _clear_form(self) -> None:
         for var in (self.date_var, self.liters_var, self.amount_var, self.price_var, self.station_var):
             var.set("")

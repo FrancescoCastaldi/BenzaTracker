@@ -10,11 +10,6 @@ Una mini applicazione desktop per monitorare i rifornimenti di benzina con un'in
 - Grafico a barre dell'andamento della spesa mensile.
 - Persistenza dei dati sul disco (`~/.benzatracker/refuels.json`).
 
-## Anteprima interfaccia
-
-L'interfaccia principale mostra un form per inserire i rifornimenti e una serie di KPI sintetici.
-Sono inoltre presenti una tabella con lo storico e un grafico a barre della spesa mensile.
-
 ## Requisiti
 
 - macOS con Python 3.10 o superiore.
