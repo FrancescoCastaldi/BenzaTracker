@@ -19,7 +19,6 @@ class RefuelEntry:
     amount_paid: float
     price_per_liter: float
     station: str | None = None
-    odometer_km: float | None = None
 
     def to_dict(self) -> dict:
         payload = asdict(self)
@@ -28,14 +27,12 @@ class RefuelEntry:
 
     @classmethod
     def from_dict(cls, payload: dict) -> "RefuelEntry":
-        odometer_value = payload.get("odometer_km")
         return cls(
             refuel_date=datetime.strptime(payload["refuel_date"], DATE_FORMAT).date(),
             liters=float(payload["liters"]),
             amount_paid=float(payload["amount_paid"]),
             price_per_liter=float(payload["price_per_liter"]),
             station=payload.get("station") or None,
-            odometer_km=float(odometer_value) if odometer_value is not None else None,
         )
 
 

@@ -1,1 +1,2 @@
-# BenzaTracker non richiede librerie esterne: questo file è intenzionalmente vuoto.
+matplotlib>=3.7
+ttkbootstrap>=1.10
