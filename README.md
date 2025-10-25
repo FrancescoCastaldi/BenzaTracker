@@ -34,6 +34,13 @@ chmod +x install_mac.sh
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python -m benzatracker.cli
+```
+
+Durante l'inserimento di un rifornimento puoi lasciare vuoto il campo contachilometri se non disponibile. I KPI sui consumi (km/L e L/100km) verranno mostrati solo quando sono presenti almeno due registrazioni consecutive con il contachilometri compilato. Puoi sempre utilizzare le opzioni "Aggiorna contachilometri" ed "Elimina rifornimento" del menu principale per correggere o gestire le registrazioni esistenti.
+
+La nuova voce di menu "Filtra periodi (10 del mese)" mostra rapidamente i rifornimenti compresi fra il 10 del mese scorso, il 10 del mese corrente e il 10 del mese successivo, includendo un riepilogo dei KPI per l'intervallo selezionato.
+
 python -m benzatracker.gui
 ```
 
