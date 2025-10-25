@@ -1,7 +1,7 @@
 """Data persistence layer for BenzaTracker."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict, replace
+from dataclasses import dataclass, asdict
 from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable, List
@@ -19,7 +19,6 @@ class RefuelEntry:
     amount_paid: float
     price_per_liter: float
     station: str | None = None
-    odometer_km: float | None = None
 
     def to_dict(self) -> dict:
         payload = asdict(self)
@@ -28,14 +27,12 @@ class RefuelEntry:
 
     @classmethod
     def from_dict(cls, payload: dict) -> "RefuelEntry":
-        odometer_value = payload.get("odometer_km")
         return cls(
             refuel_date=datetime.strptime(payload["refuel_date"], DATE_FORMAT).date(),
             liters=float(payload["liters"]),
             amount_paid=float(payload["amount_paid"]),
             price_per_liter=float(payload["price_per_liter"]),
             station=payload.get("station") or None,
-            odometer_km=float(odometer_value) if odometer_value is not None else None,
         )
 
 
@@ -63,20 +60,3 @@ class DataStore:
         entries.append(entry)
         self.save_entries(entries)
         return entries
-
-    def delete_entry(self, index: int) -> List[RefuelEntry]:
-        entries = self.load_entries()
-        if index < 0 or index >= len(entries):
-            raise IndexError("Indice fuori dall'intervallo disponibile")
-        entries.pop(index)
-        self.save_entries(entries)
-        return entries
-
-    def update_odometer(self, index: int, odometer_km: float | None) -> RefuelEntry:
-        entries = self.load_entries()
-        if index < 0 or index >= len(entries):
-            raise IndexError("Indice fuori dall'intervallo disponibile")
-        updated = replace(entries[index], odometer_km=odometer_km)
-        entries[index] = updated
-        self.save_entries(entries)
-        return updated

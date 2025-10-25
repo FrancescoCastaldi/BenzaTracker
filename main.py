@@ -1,4 +1,4 @@
-from benzatracker.cli import run
+from benzatracker.gui import run
 
 
 if __name__ == "__main__":
