@@ -48,7 +48,7 @@ try {
     }
 
     Write-Host "Creazione dell'eseguibile standalone..."
-    & $pythonExe -m pyinstaller --name $ExecutableName --onefile --clean --noconfirm --windowed main.py | Write-Output
+    & $pythonExe -m pyinstaller --name $ExecutableName --onefile --clean --noconfirm --console main.py | Write-Output
 
     Write-Host "Operazione completata. Troverai l'eseguibile in dist\\$ExecutableName.exe"
 } finally {

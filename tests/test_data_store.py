@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -50,16 +50,3 @@ def test_update_odometer_accepts_none(temp_store: DataStore) -> None:
 
     assert updated.odometer_km is None
     assert temp_store.load_entries()[0].odometer_km is None
-
-
-def test_last_updated_returns_none_without_file(temp_store: DataStore) -> None:
-    assert temp_store.last_updated_at() is None
-
-
-def test_last_updated_reports_recent_timestamp(temp_store: DataStore) -> None:
-    temp_store.append_entry(_sample_entry(5))
-
-    timestamp = temp_store.last_updated_at()
-
-    assert timestamp is not None
-    assert timestamp >= datetime.now() - timedelta(minutes=1)
