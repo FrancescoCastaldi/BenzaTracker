@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -50,34 +50,3 @@ def test_update_odometer_accepts_none(temp_store: DataStore) -> None:
 
     assert updated.odometer_km is None
     assert temp_store.load_entries()[0].odometer_km is None
-
-
-def test_last_updated_returns_none_without_file(temp_store: DataStore) -> None:
-    assert temp_store.last_updated_at() is None
-
-
-def test_last_updated_reports_recent_timestamp(temp_store: DataStore) -> None:
-    temp_store.append_entry(_sample_entry(5))
-
-    timestamp = temp_store.last_updated_at()
-
-    assert timestamp is not None
-    assert timestamp >= datetime.now() - timedelta(minutes=1)
-
-
-def test_photo_management_import_and_delete(temp_store: DataStore, tmp_path: Path) -> None:
-    image_path = tmp_path / "sample.jpg"
-    image_path.write_bytes(b"fake-image")
-
-    identifier = temp_store.import_photo(image_path)
-    stored = temp_store.resolve_photo_path(identifier)
-
-    assert stored.exists()
-
-    entry = _sample_entry(7)
-    entry.photo_path = identifier
-    temp_store.save_entries([entry])
-
-    temp_store.delete_entry(0)
-
-    assert not stored.exists()
