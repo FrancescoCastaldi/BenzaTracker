@@ -122,9 +122,8 @@ echo.
 
 REM Launch the application
 cd dist
-start BenzaTracker.exe
+start "" "BenzaTracker.exe"
 cd ..
-
 echo [OK] Application launched!
 echo.
 echo To run BenzaTracker again in the future, double-click this file.
