@@ -34,8 +34,7 @@ class BenzaTrackerApp(tb.Window):
     def _build_layout(self) -> None:
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
-        container = main_frame.innerframe
-
+        container = tb.Frame(main_frame)
         self._build_form(container)
         self._build_summary(container)
         self._build_table(container)
