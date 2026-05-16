@@ -35,15 +35,14 @@ class BenzaTrackerApp(tb.Window):
         main_frame = ScrolledFrame(self, autohide=True, padding=20)
         main_frame.pack(fill=BOTH, expand=True)
         container = tb.Frame(main_frame)
+                container.pack(fill=tk.BOTH, expand=True)
         self._build_form(container)
         self._build_summary(container)
         self._build_table(container)
         self._build_chart(container)
-                container.pack(fill=tk.BOTH, expand=True)
 
     def _build_form(self, parent: tk.Widget) -> None:
         section = tb.Frame(parent, padding=(15, 10))
-        section.pack(fill=tk.X, padx=10, pady=10)
 
         tb.Label(section, text="Nuovo rifornimento", font=("Helvetica", 18, "bold")).pack(
             anchor=W, pady=(0, 10)
