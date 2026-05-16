@@ -39,6 +39,7 @@ class BenzaTrackerApp(tb.Window):
         self._build_summary(container)
         self._build_table(container)
         self._build_chart(container)
+                container.pack(fill=tk.BOTH, expand=True)
 
     def _build_form(self, parent: tk.Widget) -> None:
         section = tb.Frame(parent, padding=(15, 10))
@@ -126,6 +127,16 @@ class BenzaTrackerApp(tb.Window):
         section = tb.Labelframe(parent, text="Spesa mensile", padding=(15, 10))
         section.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
+                # Pulsante elimina
+        btn_frame = tb.Frame(section)
+        btn_frame.pack(fill=tk.X, pady=(8, 0))
+        tb.Button(
+            btn_frame,
+            text="Elimina selezionato",
+            command=self._on_delete,
+            bootstyle="danger",
+        ).pack(side=RIGHT)
+
         self.figure = Figure(figsize=(6, 3), dpi=100)
         self.ax = self.figure.add_subplot(111)
         self.ax.set_xlabel("Mese")
@@ -187,6 +198,30 @@ class BenzaTrackerApp(tb.Window):
     # Helpers ----------------------------------------------------------------
     def _clear_form(self) -> None:
         for var in (self.date_var, self.liters_var, self.amount_var, self.price_var, self.station_var):
+
+                def _on_delete(self) -> None:
+        """Elimina il rifornimento selezionato nella tabella."""
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("Nessuna selezione", "Seleziona un rifornimento da eliminare")
+            return
+
+        # Chiedi conferma
+        if not messagebox.askyesno(
+            "Conferma eliminazione", "Vuoi davvero eliminare questo rifornimento?"
+        ):
+            return
+
+        # Trova l'indice nell'array entries (sorted by date reversed)
+        selected_item = self.tree.item(selected[0])
+        date_str = selected_item["values"][0]  # formato dd/mm/yyyy
+        refuel_date = datetime.strptime(date_str, "%d/%m/%Y").date()
+
+        # Trova e rimuovi dall'array
+        self.entries = [e for e in self.entries if e.refuel_date != refuel_date]
+        self.datastore.save_entries(self.entries)
+        self._refresh_dashboard()
+        messagebox.showinfo("Eliminato", "Il rifornimento è stato eliminato")
             var.set("")
 
     def _refresh_dashboard(self) -> None:
