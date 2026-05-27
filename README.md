@@ -1,7 +1,7 @@
 # BenzaTracker
 
 <p align="center">
-  <img src="docs/logo.jpg" alt="BenzaTracker logo" width="220"/>
+  <img src="docs/logo.png" alt="BenzaTracker logo" width="220"/>
 </p>
 
 <p align="center">
