@@ -1,66 +1,129 @@
 # BenzaTracker
 
-Una mini applicazione desktop per monitorare i rifornimenti di benzina con un'interfaccia moderna e indicatori utili.
+[![CI](https://github.com/FrancescoCastaldi/BenzaTracker/actions/workflows/python-app.yml/badge.svg)](https://github.com/FrancescoCastaldi/BenzaTracker/actions/workflows/python-app.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://docs.astral.sh/ruff/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/FrancescoCastaldi/BenzaTracker/pulls)
 
-## Funzionalità principali
+> Applicazione desktop e CLI per tracciare i rifornimenti di carburante, calcolare KPI di spesa e generare report PDF.
 
-- Inserimento guidato di data, litri, importo, prezzo al litro e benzinaio.
-- Dashboard con KPI: totale speso, litri totali, prezzo medio, spesa media mensile e migliori/peggiori prezzi.
-- Storico dei rifornimenti con tabella ordinata.
-- Grafico a barre dell'andamento della spesa mensile.
-- Persistenza dei dati sul disco (`~/.benzatracker/refuels.json`).
+---
 
-## Requisiti
+## ✨ Funzionalità
 
-- macOS con Python 3.10 o superiore.
+| Feature | Dettaglio |
+|---|---|
+| 📋 **Inserimento rifornimenti** | Data, litri, importo, prezzo/L e benzinaio |
+| 📊 **Dashboard KPI** | Totale speso, litri totali, prezzo medio, spesa mensile |
+| 📈 **Grafico spesa mensile** | Barchart interattivo con matplotlib |
+| 📄 **Export PDF** | Report completo con tabella e grafici via ReportLab |
+| 💾 **Persistenza locale** | `~/.benzatracker/refuels.json` con scrittura atomica |
+| 🖥️ **GUI + CLI** | Interfaccia ttkbootstrap e fallback testuale |
 
-## Installazione rapida su macOS
+---
 
-Esegui lo script di installazione che crea un ambiente virtuale, installa le dipendenze e avvia l'applicazione:
+## 🚀 Installazione
+
+### Prerequisiti
+
+- Python **3.10** o superiore
+- `pip`
+
+### macOS / Linux
 
 ```bash
-./install_mac.sh
-```
-
-Al primo avvio potrebbe essere necessario concedere i permessi di esecuzione:
-
-```bash
-chmod +x install_mac.sh
-```
-
-## Esecuzione manuale
-
-```bash
+git clone https://github.com/FrancescoCastaldi/BenzaTracker.git
+cd BenzaTracker
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+### Windows
+
+```bat
+git clone https://github.com/FrancescoCastaldi/BenzaTracker.git
+cd BenzaTracker
+install_and_run.bat
+```
+
+---
+
+## ▶️ Utilizzo
+
+### Interfaccia grafica
+
+```bash
+python -m benzatracker.gui
+# oppure
+python main.py
+```
+
+### Interfaccia CLI
+
+```bash
 python -m benzatracker.cli
 ```
 
-Durante l'inserimento di un rifornimento puoi lasciare vuoto il campo contachilometri se non disponibile. I KPI sui consumi (km/L e L/100km) verranno mostrati solo quando sono presenti almeno due registrazioni consecutive con il contachilometri compilato. Puoi sempre utilizzare le opzioni "Aggiorna contachilometri" ed "Elimina rifornimento" del menu principale per correggere o gestire le registrazioni esistenti.
+---
 
-La nuova voce di menu "Filtra periodi (10 del mese)" mostra rapidamente i rifornimenti compresi fra il 10 del mese scorso, il 10 del mese corrente e il 10 del mese successivo, includendo un riepilogo dei KPI per l'intervallo selezionato.
-
-python -m benzatracker.gui
-```
-
-## Test
+## 🧪 Test
 
 ```bash
+pip install pytest
 pytest
 ```
 
-## Struttura del progetto
+I test coprono `DataStore`, `KPI` e il flusso CLI su Windows.
+
+---
+
+## 🗂 Struttura del progetto
 
 ```
 BenzaTracker/
-├─ main.py                # Entry point
-├─ install_mac.sh         # Installer per macOS
-├─ requirements.txt       # Dipendenze Python
-├─ benzatracker/
-│  ├─ data_store.py       # Gestione persistenza
-│  ├─ gui.py              # Interfaccia grafica e dashboard
-│  └─ kpi.py              # Calcolo indicatori e aggregazioni
-└─ tests/
-   └─ test_kpi.py         # Test automatici per i KPI
+├── main.py                    # Entry point GUI
+├── requirements.txt           # Dipendenze runtime
+├── pyproject.toml             # Metadata progetto + config ruff/mypy
+├── pytest.ini                 # Configurazione pytest
+├── install_and_run.bat        # Installer Windows
+├── benzatracker/
+│   ├── __init__.py
+│   ├── data_store.py          # Persistenza (atomic write)
+│   ├── kpi.py                 # Calcolo KPI e aggregazioni
+│   ├── cli.py                 # Interfaccia CLI
+│   ├── gui.py                 # Interfaccia grafica ttkbootstrap
+│   └── pdf_report.py          # Export PDF con ReportLab
+└── tests/
+    ├── test_data_store.py
+    ├── test_kpi.py
+    └── test_cli_windows.py
 ```
+
+---
+
+## 🤝 Contribuire
+
+1. Fai un fork del repository
+2. Crea un branch: `git checkout -b feat/nome-feature`
+3. Committa con [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`
+4. Apri una Pull Request descrivendo le modifiche
+
+```bash
+# Setup pre-commit (opzionale ma consigliato)
+pip install pre-commit
+pre-commit install
+```
+
+---
+
+## 📜 Changelog
+
+Vedi [CHANGELOG.md](CHANGELOG.md) per la cronologia delle versioni.
+
+---
+
+## 📄 Licenza
+
+Distribuito sotto licenza **MIT**. Vedi [LICENSE](LICENSE) per i dettagli.
