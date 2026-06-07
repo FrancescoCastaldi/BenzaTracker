@@ -69,6 +69,9 @@ _THEME_DEF = ThemeDefinition(
     },
 )
 
+# Register theme globally so tb.Window can use it on creation
+tb.Style().register_theme(_THEME_DEF)
+
 
 # ── validation helpers ──────────────────────────────────────────────────────
 
@@ -138,12 +141,8 @@ class BenzaTrackerApp(tb.Window):
 
     def _configure_styles(self) -> None:
         style = tb.Style()
-        # Register & apply custom theme
-        try:
-            style.register_theme(_THEME_DEF)
-            style.theme_use("techminimal")
-        except Exception:
-            pass  # fall back to darkly if registration fails
+        # Theme already registered at module level — just ensure it's active
+        style.theme_use("techminimal")
 
         # ── ttk widget overrides ────────────────────────────────────────────
         style.configure(".", background=C["bg"])
