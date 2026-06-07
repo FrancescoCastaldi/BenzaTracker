@@ -10,3 +10,6 @@ build/
 # Docker persistent data (SQLite database)
 data/
 
+# OpenCode internal session data
+thoughts/
+
