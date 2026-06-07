@@ -50,19 +50,19 @@ class ReportGenerator:
 
     def _build_kpi_table(self, kpi, styles) -> Table:
         data = [
-            ["KPI", "Valore"],
-            ["Totale speso", f"€ {kpi.total_spent:.2f}"],
-            ["Litri totali", f"{kpi.total_liters:.2f} L"],
-            ["Prezzo medio €/L", f"€ {kpi.average_price:.3f}"],
-            ["Spesa media mensile", f"€ {kpi.average_monthly_spend:.2f}"],
-            ["Numero rifornimenti", str(kpi.entries_count)],
+            ["KPI", "Value"],
+            ["Total spent", f"\u20ac {kpi.total_spent:.2f}"],
+            ["Total liters", f"{kpi.total_liters:.2f} L"],
+            ["Average price \u20ac/L", f"\u20ac {kpi.average_price:.3f}"],
+            ["Avg monthly spend", f"\u20ac {kpi.average_monthly_spend:.2f}"],
+            ["Refuels count", str(kpi.entries_count)],
         ]
         if kpi.best_price:
             d, p = kpi.best_price
-            data.append(["Miglior prezzo", f"€ {p:.3f} ({d:%d/%m/%Y})"])
+            data.append(["Best price", f"\u20ac {p:.3f} ({d:%d/%m/%Y})"])
         if kpi.worst_price:
             d, p = kpi.worst_price
-            data.append(["Peggior prezzo", f"€ {p:.3f} ({d:%d/%m/%Y})"])
+            data.append(["Worst price", f"\u20ac {p:.3f} ({d:%d/%m/%Y})"])
 
         table = Table(data, colWidths=[3 * inch, 2 * inch])
         table.setStyle(TableStyle([
@@ -80,7 +80,7 @@ class ReportGenerator:
 
     def _build_entries_table(self, entries: List[RefuelEntry], styles) -> Table:
         sorted_entries = sorted(entries, key=lambda x: x.refuel_date, reverse=True)
-        data = [["Data", "Litri", "Importo", "€/L", "Benzinaio"]]
+        data = [["Date", "Liters", "Amount", "€/L", "Station", "Km"]]
         for entry in sorted_entries:
             data.append([
                 entry.refuel_date.strftime("%d/%m/%Y"),
@@ -88,8 +88,9 @@ class ReportGenerator:
                 f"€ {entry.amount_paid:.2f}",
                 f"€ {entry.price_per_liter:.3f}",
                 entry.station or "-",
+                f"{entry.odometer_km:.0f}" if entry.odometer_km else "-",
             ])
-        table = Table(data, colWidths=[1.2 * inch, 1 * inch, 1.2 * inch, 1 * inch, 1.6 * inch])
+        table = Table(data, colWidths=[1.2 * inch, 0.9 * inch, 1.1 * inch, 0.9 * inch, 1.3 * inch, 0.7 * inch])
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1f77b4")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),

@@ -1,6 +1,7 @@
 """GUI application for BenzaTracker (ttkbootstrap / tkinter)."""
 from __future__ import annotations
 
+import csv
 import tkinter as tk
 from datetime import datetime
 from pathlib import Path
@@ -27,7 +28,7 @@ class BenzaTrackerApp(tb.Window):
 
     def __init__(self, theme: str = "darkly") -> None:
         super().__init__(themename=theme, title="BenzaTracker")
-        self.geometry("1100x720")
+        self.geometry("1200x760")
         self.datastore = create_store(config.get_data_dir())
         self.entries: list[RefuelEntry] = self.datastore.load_entries()
         self._build_layout()
@@ -46,47 +47,55 @@ class BenzaTrackerApp(tb.Window):
 
     def _build_form(self, parent: tk.Widget) -> None:
         section = tb.Frame(parent, padding=(15, 10))
-        tb.Label(section, text="Nuovo rifornimento", font=("Helvetica", 18, "bold")).pack(
+        tb.Label(section, text="New refuel", font=("Helvetica", 18, "bold")).pack(
             anchor=W, pady=(0, 10)
         )
         form_frame = tb.Frame(section)
         form_frame.pack(fill=tk.X)
         self.date_var = tk.StringVar()
-        self._add_labeled_entry(form_frame, "Data (YYYY-MM-DD)", self.date_var, 0)
+        self._add_labeled_entry(form_frame, "Date (YYYY-MM-DD)", self.date_var, 0)
         self.liters_var = tk.StringVar()
-        self._add_labeled_entry(form_frame, "Litri", self.liters_var, 1)
+        self._add_labeled_entry(form_frame, "Liters", self.liters_var, 1)
         self.amount_var = tk.StringVar()
-        self._add_labeled_entry(form_frame, "Pagamento (€)", self.amount_var, 2)
+        self._add_labeled_entry(form_frame, "Amount (\u20ac)", self.amount_var, 2)
         self.price_var = tk.StringVar()
-        self._add_labeled_entry(form_frame, "Prezzo €/L (opzionale)", self.price_var, 3)
+        self._add_labeled_entry(form_frame, "Price \u20ac/L (optional)", self.price_var, 3)
         self.station_var = tk.StringVar()
-        self._add_labeled_entry(form_frame, "Benzinaio (opzionale)", self.station_var, 4)
+        self._add_labeled_entry(form_frame, "Station (optional)", self.station_var, 4)
+        self.odometer_var = tk.StringVar()
+        self._add_labeled_entry(form_frame, "Odometer km (optional)", self.odometer_var, 5)
         button_frame = tb.Frame(section)
         button_frame.pack(fill=tk.X, pady=(12, 0))
-        tb.Button(button_frame, text="Salva rifornimento", command=self._on_submit, bootstyle="success").pack(
+        tb.Button(button_frame, text="Save refuel", command=self._on_submit, bootstyle="success").pack(
             side=RIGHT
         )
         tb.Button(
             button_frame,
-            text="Esporta PDF",
+            text="Export PDF",
             command=self._on_export_pdf,
             bootstyle="info",
         ).pack(side=RIGHT, padx=5)
+        tb.Button(
+            button_frame,
+            text="Export CSV",
+            command=self._on_export_csv,
+            bootstyle="secondary",
+        ).pack(side=RIGHT, padx=5)
 
     def _build_summary(self, parent: tk.Widget) -> None:
-        section = tb.Labelframe(parent, text="Indicatori", padding=(15, 10))
+        section = tb.Labelframe(parent, text="KPIs", padding=(15, 10))
         section.pack(fill=tk.X, padx=10, pady=10)
         summary_grid = tb.Frame(section)
         summary_grid.pack(fill=tk.X)
         self.summary_vars: dict[str, tk.StringVar] = {}
         labels = {
-            "total_spent": "Totale speso",
-            "total_liters": "Litri totali",
-            "average_price": "Prezzo medio €/L",
-            "average_monthly_spend": "Spesa media mensile",
-            "entries_count": "Numero rifornimenti",
-            "best_price": "Miglior prezzo",
-            "worst_price": "Peggior prezzo",
+            "total_spent": "Total spent",
+            "total_liters": "Total liters",
+            "average_price": "Avg price \u20ac/L",
+            "average_monthly_spend": "Avg monthly spend",
+            "entries_count": "Refuels count",
+            "best_price": "Best price",
+            "worst_price": "Worst price",
         }
         for column, (key, label) in enumerate(labels.items()):
             frame = tb.Frame(summary_grid, padding=10)
@@ -97,35 +106,35 @@ class BenzaTrackerApp(tb.Window):
             self.summary_vars[key] = value_var
 
     def _build_table(self, parent: tk.Widget) -> None:
-        section = tb.Labelframe(parent, text="Storico rifornimenti", padding=(15, 10))
+        section = tb.Labelframe(parent, text="Refuel history", padding=(15, 10))
         section.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        columns = ("date", "liters", "amount", "price", "station")
+        columns = ("date", "liters", "amount", "price", "station", "odo")
         self.tree = tb.Treeview(
             section, columns=columns, show="headings", height=8, bootstyle="dark",
         )
         headings = {
-            "date": "Data", "liters": "Litri", "amount": "Pagamento",
-            "price": "€/L", "station": "Benzinaio",
+            "date": "Date", "liters": "Liters", "amount": "Amount",
+            "price": "\u20ac/L", "station": "Station", "odo": "Odometer",
         }
         for name, text in headings.items():
             self.tree.heading(name, text=text)
-            self.tree.column(name, anchor=CENTER, width=130)
+            self.tree.column(name, anchor=CENTER, width=120)
         self.tree.pack(fill=tk.BOTH, expand=True)
 
     def _build_chart(self, parent: tk.Widget) -> None:
-        section = tb.Labelframe(parent, text="Spesa mensile", padding=(15, 10))
+        section = tb.Labelframe(parent, text="Monthly spend", padding=(15, 10))
         section.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         btn_frame = tb.Frame(section)
         btn_frame.pack(fill=tk.X, pady=(8, 0))
         tb.Button(
-            btn_frame, text="Elimina selezionato",
+            btn_frame, text="Delete selected",
             command=self._on_delete, bootstyle="danger",
         ).pack(side=RIGHT)
         self.figure = Figure(figsize=(6, 3), dpi=100)
         self.ax = self.figure.add_subplot(111)
-        self.ax.set_xlabel("Mese")
-        self.ax.set_ylabel("Spesa (€)")
-        self.ax.set_title("Andamento mensile")
+        self.ax.set_xlabel("Month")
+        self.ax.set_ylabel("Spend (\u20ac)")
+        self.ax.set_title("Monthly trend")
         self.canvas = FigureCanvasTkAgg(self.figure, master=section)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
@@ -140,53 +149,70 @@ class BenzaTrackerApp(tb.Window):
         try:
             refuel_date = datetime.strptime(self.date_var.get().strip(), DATE_FORMAT).date()
         except ValueError:
-            messagebox.showerror("Data non valida", "Inserisci la data nel formato YYYY-MM-DD")
+            messagebox.showerror("Invalid date", "Enter date in YYYY-MM-DD format")
             return
         try:
             liters = float(self.liters_var.get())
             amount = float(self.amount_var.get())
         except ValueError:
-            messagebox.showerror("Valori non validi", "Litri e pagamento devono essere numeri")
+            messagebox.showerror("Invalid values", "Liters and amount must be numbers")
             return
         if liters <= 0 or amount <= 0:
-            messagebox.showerror("Valori non validi", "Litri e pagamento devono essere positivi")
+            messagebox.showerror("Invalid values", "Liters and amount must be positive")
             return
         if self.price_var.get().strip():
             try:
                 price = float(self.price_var.get())
             except ValueError:
-                messagebox.showerror("Prezzo non valido", "Il prezzo deve essere numerico")
+                messagebox.showerror("Invalid price", "Price must be a number")
                 return
         else:
             price = amount / liters
         station = self.station_var.get().strip() or None
+        odometer_raw = self.odometer_var.get().strip()
+        odometer_km: float | None = float(odometer_raw) if odometer_raw else None
+
         entry = RefuelEntry(
             refuel_date=refuel_date, liters=liters, amount_paid=amount,
-            price_per_liter=price, station=station,
+            price_per_liter=price, station=station, odometer_km=odometer_km,
         )
         self.entries = self.datastore.append_entry(entry)
         self._clear_form()
         self._refresh_dashboard()
-        messagebox.showinfo("Rifornimento salvato", "Il rifornimento è stato registrato correttamente")
+        messagebox.showinfo("Refuel saved", "The refuel has been recorded successfully")
 
     def _on_delete(self) -> None:
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Nessuna selezione", "Seleziona un rifornimento da eliminare")
+            messagebox.showwarning("No selection", "Select a refuel to delete")
             return
-        if not messagebox.askyesno("Conferma eliminazione", "Vuoi davvero eliminare questo rifornimento?"):
+
+        # Retrieve entry index stored in iid
+        iid = selected[0]
+        idx = int(iid)
+
+        entry = self.entries[idx]
+        confirm_msg = (
+            f"Delete this refuel?\n\n"
+            f"Date: {entry.refuel_date}\n"
+            f"Liters: {entry.liters:.2f}\n"
+            f"Amount: \u20ac{entry.amount_paid:.2f}\n"
+            f"Station: {entry.station or '-'}"
+        )
+        if not messagebox.askyesno("Confirm delete", confirm_msg):
             return
-        selected_item = self.tree.item(selected[0])
-        date_str = selected_item["values"][0]
-        refuel_date = datetime.strptime(date_str, "%d/%m/%Y").date()
-        self.entries = [e for e in self.entries if e.refuel_date != refuel_date]
-        self.datastore.save_entries(self.entries)
+
+        try:
+            self.entries = self.datastore.delete_entry(idx)
+        except IndexError:
+            messagebox.showerror("Error", "Entry not found")
+            return
         self._refresh_dashboard()
-        messagebox.showinfo("Eliminato", "Il rifornimento è stato eliminato")
+        messagebox.showinfo("Deleted", "The refuel has been deleted")
 
     def _on_export_pdf(self) -> None:
         if not self.entries:
-            messagebox.showwarning("Nessun dato", "Non ci sono dati da esportare")
+            messagebox.showwarning("No data", "No data to export")
             return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".pdf",
@@ -195,15 +221,42 @@ class BenzaTrackerApp(tb.Window):
         )
         if file_path:
             try:
-                generator = ReportGenerator(file_path)
-                generator.generate(self.entries)
-                messagebox.showinfo("Esportazione completata", f"Report salvato in: {file_path}")
+                ReportGenerator(file_path).generate(self.entries)
+                messagebox.showinfo("Export complete", f"Report saved to: {file_path}")
             except Exception as e:
-                messagebox.showerror("Errore esportazione", f"Errore durante l'esportazione: {e}")
+                messagebox.showerror("Export error", f"Error during export: {e}")
+
+    def _on_export_csv(self) -> None:
+        if not self.entries:
+            messagebox.showwarning("No data", "No data to export")
+            return
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile="benzatracker_export.csv",
+        )
+        if file_path:
+            try:
+                with Path(file_path).open("w", newline="", encoding="utf-8-sig") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["Date", "Liters", "Amount", "Price/L", "Station", "Odometer (km)"])
+                    for e in sorted(self.entries, key=lambda x: x.refuel_date):
+                        writer.writerow([
+                            e.refuel_date.strftime(DATE_FORMAT),
+                            e.liters,
+                            e.amount_paid,
+                            e.price_per_liter,
+                            e.station or "",
+                            e.odometer_km or "",
+                        ])
+                messagebox.showinfo("Export complete", f"CSV exported to: {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export error", f"Error exporting CSV: {e}")
 
     # Helpers ----------------------------------------------------------------
     def _clear_form(self) -> None:
-        for var in (self.date_var, self.liters_var, self.amount_var, self.price_var, self.station_var):
+        for var in (self.date_var, self.liters_var, self.amount_var,
+                     self.price_var, self.station_var, self.odometer_var):
             var.set("")
 
     def _refresh_dashboard(self) -> None:
@@ -213,49 +266,54 @@ class BenzaTrackerApp(tb.Window):
 
     def _update_summary(self) -> None:
         report = compute(self.entries)
-        self.summary_vars["total_spent"].set(f"€ {report.total_spent:.2f}")
+        self.summary_vars["total_spent"].set(f"\u20ac {report.total_spent:.2f}")
         self.summary_vars["total_liters"].set(f"{report.total_liters:.2f} L")
-        self.summary_vars["average_price"].set(f"€ {report.average_price:.3f}")
-        self.summary_vars["average_monthly_spend"].set(f"€ {report.average_monthly_spend:.2f}")
+        self.summary_vars["average_price"].set(f"\u20ac {report.average_price:.3f}")
+        self.summary_vars["average_monthly_spend"].set(f"\u20ac {report.average_monthly_spend:.2f}")
         self.summary_vars["entries_count"].set(str(report.entries_count))
         if report.best_price:
             d, p = report.best_price
-            self.summary_vars["best_price"].set(f"€ {p:.3f} ({d:%d/%m/%Y})")
+            self.summary_vars["best_price"].set(f"\u20ac {p:.3f} ({d:%d/%m/%Y})")
         else:
             self.summary_vars["best_price"].set("-")
         if report.worst_price:
             d, p = report.worst_price
-            self.summary_vars["worst_price"].set(f"€ {p:.3f} ({d:%d/%m/%Y})")
+            self.summary_vars["worst_price"].set(f"\u20ac {p:.3f} ({d:%d/%m/%Y})")
         else:
             self.summary_vars["worst_price"].set("-")
 
     def _update_table(self) -> None:
         self.tree.delete(*self.tree.get_children())
-        for entry in sorted(self.entries, key=lambda e: e.refuel_date, reverse=True):
+        # Display in reverse chronological order
+        for idx, entry in enumerate(self.entries):
             self.tree.insert(
-                "", END,
+                "", END, iid=str(idx),
                 values=(
                     entry.refuel_date.strftime("%d/%m/%Y"),
                     f"{entry.liters:.2f}",
-                    f"€ {entry.amount_paid:.2f}",
-                    f"€ {entry.price_per_liter:.3f}",
+                    f"\u20ac {entry.amount_paid:.2f}",
+                    f"\u20ac {entry.price_per_liter:.3f}",
                     entry.station or "-",
+                    f"{entry.odometer_km:.0f} km" if entry.odometer_km else "-",
                 ),
             )
 
     def _update_chart(self) -> None:
         self.ax.clear()
-        self.ax.set_xlabel("Mese")
-        self.ax.set_ylabel("Spesa (€)")
-        self.ax.set_title("Andamento mensile")
+        self.ax.set_xlabel("Month")
+        self.ax.set_ylabel("Spend (\u20ac)")
+        self.ax.set_title("Monthly trend")
         monthly_data = monthly_spend(self.entries)
         if monthly_data:
             months = [m.strftime("%b %Y") for m, _ in monthly_data]
             values = [v for _, v in monthly_data]
             bars = self.ax.bar(months, values, color="#3cb371")
-            self.ax.bar_label(bars, fmt="€ %.0f")
+            self.ax.bar_label(bars, fmt="\u20ac %.0f")
         else:
-            self.ax.text(0.5, 0.5, "Nessun dato disponibile", ha="center", va="center", transform=self.ax.transAxes)
+            self.ax.text(
+                0.5, 0.5, "No data available",
+                ha="center", va="center", transform=self.ax.transAxes,
+            )
         self.figure.tight_layout()
         self.canvas.draw_idle()
 

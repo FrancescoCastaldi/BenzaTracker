@@ -6,6 +6,7 @@ Usage::
 """
 from __future__ import annotations
 
+import csv
 import io
 import os
 import tempfile
@@ -41,9 +42,9 @@ def _build_chart_bytes(entries: list[RefuelEntry]) -> bytes | None:
     values = [v for _, v in monthly_data]
     bars = ax.bar(months, values, color="#3cb371")
     ax.bar_label(bars, fmt="\u20ac %.0f")
-    ax.set_xlabel("Mese")
-    ax.set_ylabel("Spesa (\u20ac)")
-    ax.set_title("Andamento mensile")
+    ax.set_xlabel("Month")
+    ax.set_ylabel("Spend (\u20ac)")
+    ax.set_title("Monthly trend")
     fig.tight_layout()
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
@@ -81,14 +82,14 @@ def entries_add():
     try:
         refuel_date = datetime.strptime(request.form["refuel_date"], DATE_FORMAT).date()
     except (KeyError, ValueError):
-        return "Data non valida (usa YYYY-MM-DD)", 400
+        return "Invalid date (use YYYY-MM-DD)", 400
     try:
         liters = float(request.form["liters"])
         amount_paid = float(request.form["amount_paid"])
     except (KeyError, ValueError):
-        return "Litri e pagamento devono essere numerici", 400
+        return "Liters and amount must be numeric", 400
     if liters <= 0 or amount_paid <= 0:
-        return "Litri e pagamento devono essere positivi", 400
+        return "Liters and amount must be positive", 400
 
     price_raw = request.form.get("price_per_liter", "").strip()
     price_per_liter = float(price_raw) if price_raw else round(amount_paid / liters, 3)
@@ -107,7 +108,7 @@ def entries_delete(index: int):
     try:
         store.delete_entry(index)
     except IndexError:
-        return "Rifornimento non trovato", 404
+        return "Refuel not found", 404
     return redirect(url_for("entries_list"))
 
 
@@ -115,7 +116,7 @@ def entries_delete(index: int):
 def report():
     entries = store.load_entries()
     if not entries:
-        return "Nessun dato da esportare", 400
+        return "No data to export", 400
     tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
     try:
         ReportGenerator(tmp.name).generate(entries)
@@ -127,6 +128,33 @@ def report():
         )
     finally:
         Path(tmp.name).unlink(missing_ok=True)
+
+
+@app.route("/export/csv")
+def export_csv():
+    entries = store.load_entries()
+    if not entries:
+        return "No data to export", 400
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["Date", "Liters", "Amount", "Price/L", "Station", "Odometer (km)"])
+    for e in sorted(entries, key=lambda x: x.refuel_date):
+        writer.writerow([
+            e.refuel_date.strftime(DATE_FORMAT),
+            e.liters,
+            e.amount_paid,
+            e.price_per_liter,
+            e.station or "",
+            e.odometer_km or "",
+        ])
+    buf.seek(0)
+    return send_file(
+        io.BytesIO(buf.getvalue().encode("utf-8-sig")),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="benzatracker_export.csv",
+    )
 
 
 # ── entry point ─────────────────────────────────────────────────────────────
