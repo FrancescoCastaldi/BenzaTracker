@@ -65,6 +65,7 @@ _THEME_DEF = ThemeDefinition(
         "border": C["border"],
         "inputfg": C["text"],
         "inputbg": C["surface2"],
+        "active": C["accent_hover"],
     },
 )
 
