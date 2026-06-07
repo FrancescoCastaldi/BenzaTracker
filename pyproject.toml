@@ -4,8 +4,8 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "benzatracker"
-version = "1.1.0"
-description = "Desktop & CLI app to track fuel refuels and compute spending KPIs"
+version = "2.0.0"
+description = "Desktop, CLI & Web app to track fuel refuels and compute spending KPIs"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
@@ -13,10 +13,13 @@ dependencies = [
     "matplotlib>=3.7",
     "ttkbootstrap>=1.10",
     "reportlab>=4.0.0",
+    "flask>=3.0",
 ]
 
 [project.scripts]
 benzatracker = "benzatracker.cli:run"
+benzatracker-gui = "benzatracker.gui:run"
+benzatracker-web = "benzatracker.web:run"
 
 [project.optional-dependencies]
 dev = [
@@ -26,6 +29,9 @@ dev = [
     "mypy>=1.9",
     "pre-commit>=3.7",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 line-length = 100
@@ -43,3 +49,4 @@ warn_return_any = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]

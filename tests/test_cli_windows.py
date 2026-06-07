@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date
 
 from benzatracker.cli import build_tenth_windows
@@ -27,3 +29,10 @@ def test_build_tenth_windows_year_boundary():
     assert windows[1][2] == date(2025, 2, 10)
     assert windows[2][1] == date(2025, 2, 10)
     assert windows[2][2] == date(2025, 3, 10)
+
+
+def test_build_tenth_windows_exact_tenth():
+    """Reference date exactly on a window boundary."""
+    windows = build_tenth_windows(date(2024, 6, 10))
+    # 10 Jun should be inside the middle window
+    assert windows[1][1] <= date(2024, 6, 10) < windows[1][2]

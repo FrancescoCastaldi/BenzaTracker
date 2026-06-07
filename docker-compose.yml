@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  benzatracker:
+    build: .
+    container_name: benzatracker
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist SQLite database on the host
+      - ./data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      # - TZ=Europe/Rome   # uncomment to set timezone
+    restart: unless-stopped

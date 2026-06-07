@@ -1,12 +1,53 @@
 """Command-line interface for BenzaTracker."""
 from __future__ import annotations
 
-from datetime import datetime, date
-from typing import Callable
+from datetime import date, datetime
+from typing import Callable, List, Tuple
 
-from .data_store import DataStore, RefuelEntry, DATE_FORMAT
-from .kpi import compute_kpis, monthly_spend
+from . import config
+from .kpi import compute, monthly_spend
+from .models import DATE_FORMAT, RefuelEntry
+from .store import create_store
 
+# ── 10‑day windows (tenth windows) ─────────────────────────────────────────
+
+_MONTH_ABBR = [
+    "", "Gen", "Feb", "Mar", "Apr", "Mag", "Giu",
+    "Lug", "Ago", "Set", "Ott", "Nov", "Dic",
+]
+
+
+def _add_months(source: date, months: int) -> date:
+    total = source.year * 12 + source.month + months - 1
+    year = total // 12
+    month = total % 12 + 1
+    day = min(source.day, 28)
+    return date(year, month, day)
+
+
+def build_tenth_windows(
+    reference_date: date,
+) -> List[Tuple[str, date, date]]:
+    """Build three consecutive 10‑day windows around *reference_date*."""
+    anchor = date(reference_date.year, reference_date.month, 10)
+    past_start = _add_months(anchor, -1)
+    past_end = anchor
+    cur_start = anchor
+    cur_end = _add_months(anchor, 1)
+    next_start = cur_end
+    next_end = _add_months(next_start, 1)
+
+    def _label(start: date, end: date) -> str:
+        return f"10 {_MONTH_ABBR[start.month]} — 10 {_MONTH_ABBR[end.month]}"
+
+    return [
+        (_label(past_start, past_end), past_start, past_end),
+        (_label(cur_start, cur_end), cur_start, cur_end),
+        (_label(next_start, next_end), next_start, next_end),
+    ]
+
+
+# ── CLI actions ─────────────────────────────────────────────────────────────
 
 def _prompt_date(message: str) -> date:
     while True:
@@ -39,14 +80,13 @@ def _prompt_optional(message: str) -> str | None:
     return raw or None
 
 
-def _add_entry(store: DataStore) -> None:
+def _add_entry(store) -> None:
     print("\n--- Nuovo rifornimento ---")
     refuel_date = _prompt_date("Data del rifornimento")
     liters = _prompt_float("Litri effettuati")
     amount_paid = _prompt_float("Importo pagato")
     price_per_liter = round(amount_paid / liters, 3)
     station = _prompt_optional("Benzinaio")
-
     entry = RefuelEntry(
         refuel_date=refuel_date,
         liters=liters,
@@ -58,13 +98,12 @@ def _add_entry(store: DataStore) -> None:
     print("Rifornimento salvato correttamente.\n")
 
 
-def _show_kpis(store: DataStore) -> None:
+def _show_kpis(store) -> None:
     entries = store.load_entries()
     if not entries:
         print("\nNessun rifornimento registrato.\n")
         return
-
-    report = compute_kpis(entries)
+    report = compute(entries)
     print("\n--- KPI sintetici ---")
     print(f"Totale speso: € {report.total_spent:.2f}")
     print(f"Litri totali: {report.total_liters:.2f} L")
@@ -72,20 +111,19 @@ def _show_kpis(store: DataStore) -> None:
     print(f"Spesa media mensile: € {report.average_monthly_spend:.2f}")
     print(f"Rifornimenti registrati: {report.entries_count}")
     if report.best_price:
-        date_, price = report.best_price
-        print(f"Miglior prezzo: € {price:.3f}/L il {date_.strftime(DATE_FORMAT)}")
+        d, p = report.best_price
+        print(f"Miglior prezzo: € {p:.3f}/L il {d.strftime(DATE_FORMAT)}")
     if report.worst_price:
-        date_, price = report.worst_price
-        print(f"Peggior prezzo: € {price:.3f}/L il {date_.strftime(DATE_FORMAT)}")
+        d, p = report.worst_price
+        print(f"Peggior prezzo: € {p:.3f}/L il {d.strftime(DATE_FORMAT)}")
     print()
 
 
-def _list_entries(store: DataStore) -> None:
-    entries = sorted(store.load_entries(), key=lambda item: item.refuel_date)
+def _list_entries(store) -> None:
+    entries = sorted(store.load_entries(), key=lambda e: e.refuel_date)
     if not entries:
         print("\nNessun rifornimento registrato.\n")
         return
-
     print("\n--- Storico rifornimenti ---")
     for entry in entries:
         date_str = entry.refuel_date.strftime(DATE_FORMAT)
@@ -97,12 +135,11 @@ def _list_entries(store: DataStore) -> None:
     print()
 
 
-def _show_monthly_spend(store: DataStore) -> None:
+def _show_monthly_spend(store) -> None:
     entries = store.load_entries()
     if not entries:
         print("\nNessun rifornimento registrato.\n")
         return
-
     print("\n--- Spesa mensile ---")
     for month, total in monthly_spend(entries):
         print(f"{month.strftime('%Y-%m')} -> € {total:.2f}")
@@ -110,32 +147,24 @@ def _show_monthly_spend(store: DataStore) -> None:
 
 
 def run() -> None:
-    store = DataStore()
-    actions: dict[str, tuple[str, Callable[[DataStore], None]]] = {
+    store = create_store(config.get_data_dir())
+    actions: dict[str, tuple[str, Callable]] = {
         "1": ("Aggiungi rifornimento", _add_entry),
         "2": ("Mostra KPI", _show_kpis),
         "3": ("Elenca rifornimenti", _list_entries),
         "4": ("Spesa mensile", _show_monthly_spend),
-        "5": ("Esci", lambda _store: None),
+        "5": ("Esci", lambda _: None),
     }
-
     while True:
         print("BenzaTracker CLI")
         for key, (label, _) in actions.items():
             print(f"[{key}] {label}")
         choice = input("Seleziona un'opzione: ").strip()
-
         if choice == "5":
             print("Arrivederci!")
             break
-
         action = actions.get(choice)
         if not action:
             print("Opzione non valida. Riprova.\n")
             continue
-
         action[1](store)
-
-
-if __name__ == "__main__":  # pragma: no cover - manual entrypoint
-    run()

@@ -1,26 +1,15 @@
-"""KPIs and aggregations for BenzaTracker."""
+"""KPI computations and aggregations."""
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
 from datetime import date
 from typing import Iterable, List, Tuple
 
-from .data_store import RefuelEntry
+from .models import KPIReport, RefuelEntry
 
 
-@dataclass
-class KPIReport:
-    total_spent: float
-    total_liters: float
-    average_price: float
-    average_monthly_spend: float
-    entries_count: int
-    best_price: Tuple[date, float] | None
-    worst_price: Tuple[date, float] | None
-
-
-def compute_kpis(entries: Iterable[RefuelEntry]) -> KPIReport:
+def compute(entries: Iterable[RefuelEntry]) -> KPIReport:
+    """Compute aggregate KPIs from refuel entries."""
     entries_list = list(entries)
     if not entries_list:
         return KPIReport(0.0, 0.0, 0.0, 0.0, 0, None, None)
@@ -50,6 +39,7 @@ def compute_kpis(entries: Iterable[RefuelEntry]) -> KPIReport:
 
 
 def monthly_spend(entries: Iterable[RefuelEntry]) -> List[Tuple[date, float]]:
+    """Return sorted list of ``(month, total_spent)`` pairs."""
     aggregated = _aggregate_by_month(entries)
     return sorted(aggregated.items(), key=lambda item: item[0])
 

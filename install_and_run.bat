@@ -93,7 +93,7 @@ echo [*] Building executable with PyInstaller...
 echo    (This may take a minute or two...)
 echo.
 
-pyinstaller -w -F main.py -n BenzaTracker --onefile --add-data "benzatracker:benzatracker" --icon=NONE
+pyinstaller -w -F src/benzatracker/__main__.py -n BenzaTracker --onefile --add-data "src/benzatracker:benzatracker" --icon=NONE
 
 if errorlevel 1 (
     echo.

@@ -36,9 +36,9 @@ jobs:
       - name: Lint with flake8
         run: |
           # ferma la build su errori di sintassi o nomi non definiti
-          flake8 benzatracker tests --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/benzatracker tests --count --select=E9,F63,F7,F82 --show-source --statistics
           # warning come informativi
-          flake8 benzatracker tests --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+          flake8 src/benzatracker tests --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
 
       - name: Test with pytest (xvfb headless display)
         run: |

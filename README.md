@@ -22,28 +22,40 @@
   </a>
 </p>
 
-> Desktop and CLI application to track fuel refuels, compute spending KPIs and export PDF reports.
+> Desktop, CLI and Web application to track fuel refuels, compute spending KPIs and export PDF reports.
+> Now using **src/ layout** with SQLite + JSON persistence and Docker support.
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---|---|
-| 📋 **Refuel logging** | Date, liters, amount paid, price per liter and station name |
-| 📊 **KPI dashboard** | Total spent, total liters, average price, monthly average |
-| 📈 **Monthly chart** | Interactive bar chart of monthly spending via matplotlib |
-| 📄 **PDF export** | Full report with table and chart via ReportLab |
-| 💾 **Local persistence** | `~/.benzatracker/refuels.json` with **atomic write** (crash-safe) |
-| 🖥️ **GUI + CLI** | ttkbootstrap graphical interface and plain-text fallback |
+| Refuel logging | Date, liters, amount paid, price per liter, station, odometer |
+| KPI dashboard | Total spent, total liters, average price, monthly average |
+| Monthly chart | Interactive bar chart via matplotlib |
+| PDF export | Full report with table via ReportLab |
+| Persistence | JSON file **or** SQLite (configurable via `DATA_DIR` env) |
+| GUI + CLI + Web | ttkbootstrap GUI, terminal CLI, Flask web UI |
 
 ---
 
-## 🚀 Installation
+## Quick Start (Docker)
+
+```bash
+docker compose up -d
+# Open http://localhost:5000
+```
+
+Data persists in `./data/` (SQLite, gitignored).
+
+---
+
+## Traditional Installation
 
 ### Prerequisites
 
-- Python **3.10** or higher
+- Python **3.10+**
 - `pip`
 
 ### macOS / Linux
@@ -58,7 +70,7 @@ pip install -r requirements.txt
 
 ### Windows
 
-```bat
+```bash
 git clone https://github.com/FrancescoCastaldi/BenzaTracker.git
 cd BenzaTracker
 install_and_run.bat
@@ -66,14 +78,19 @@ install_and_run.bat
 
 ---
 
-## ▶️ Usage
+## Usage
 
-### Graphical interface
+### Web interface (Flask)
+
+```bash
+DATA_DIR=./data python -m benzatracker.web
+# → http://localhost:5000
+```
+
+### Graphical interface (ttkbootstrap)
 
 ```bash
 python -m benzatracker.gui
-# or
-python main.py
 ```
 
 ### Command-line interface
@@ -82,66 +99,86 @@ python main.py
 python -m benzatracker.cli
 ```
 
----
-
-## 🧪 Tests
+Or use the unified entry point:
 
 ```bash
-pip install pytest
-pytest
+python -m benzatracker          # runs CLI by default
+BENZA_MODE=gui python -m benzatracker
+BENZA_MODE=web python -m benzatracker
 ```
-
-Tests cover `DataStore`, `KPI` calculations and the CLI flow on Windows.
 
 ---
 
-## 🗂 Project structure
+## Tests
+
+```bash
+pip install pytest pytest-cov
+pytest -v --tb=short
+```
+
+Tests cover JSON store, SQLite store, KPI computation, CLI windows, and Flask routes.
+
+---
+
+## Project Structure
 
 ```
 BenzaTracker/
-├── main.py                    # GUI entry point
-├── requirements.txt           # Runtime dependencies
-├── pyproject.toml             # Project metadata + ruff/mypy config
-├── pytest.ini                 # Pytest configuration
-├── install_and_run.bat        # Windows installer
-├── docs/
-│   └── logo.jpg               # App logo
-├── benzatracker/
-│   ├── __init__.py
-│   ├── data_store.py          # Persistence (atomic write + validation)
-│   ├── kpi.py                 # KPI computation and aggregations
-│   ├── cli.py                 # Command-line interface
-│   ├── gui.py                 # ttkbootstrap graphical interface
-│   └── pdf_report.py          # PDF export via ReportLab
-└── tests/
-    ├── test_data_store.py
-    ├── test_kpi.py
-    └── test_cli_windows.py
+├── Dockerfile
+├── docker-compose.yml
+├── pyproject.toml              # Build config + ruff/mypy/pytest
+├── requirements.txt
+├── install_and_run.bat
+├── src/
+│   └── benzatracker/
+│       ├── __init__.py
+│       ├── __main__.py         # Entry point (CLI / GUI / Web dispatch)
+│       ├── config.py           # Environment variables, paths
+│       ├── models.py           # RefuelEntry, KPIReport dataclasses
+│       ├── store.py            # Store protocol + create_store() factory
+│       ├── json_store.py       # JSON persistence (atomic write)
+│       ├── sqlite_store.py     # SQLite persistence
+│       ├── kpi.py              # KPI computation
+│       ├── cli.py              # Command-line interface
+│       ├── gui.py              # ttkbootstrap graphical interface
+│       ├── web.py              # Flask web application
+│       ├── pdf.py              # PDF export via ReportLab
+│       └── templates/          # Jinja2 HTML templates
+│           ├── base.html
+│           ├── index.html
+│           └── entries.html
+├── tests/
+│   ├── test_data_store.py
+│   ├── test_kpi.py
+│   ├── test_cli_windows.py
+│   ├── test_database.py
+│   └── test_web.py
+└── data/                       # SQLite database (Docker volume, gitignored)
 ```
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-1. Fork the repository
-2. Create a branch: `git checkout -b feat/your-feature`
-3. Commit using [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`
-4. Open a Pull Request describing your changes
+1. Fork the repo
+2. Branch: `git checkout -b feat/your-feature`
+3. Commit with [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`
+4. Open a Pull Request
 
 ```bash
-# Optional but recommended: set up pre-commit hooks
+# Optional: pre-commit hooks
 pip install pre-commit
 pre-commit install
 ```
 
 ---
 
-## 📜 Changelog
+## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the **MIT** license. See [LICENSE](LICENSE) for details.

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+{% if kpi.entries_count > 0 %}
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="value">&euro; {{ "%.2f"|format(kpi.total_spent) }}</div>
+        <div class="label">Totale speso</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="value">{{ "%.2f"|format(kpi.total_liters) }} L</div>
+        <div class="label">Litri totali</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="value">&euro; {{ "%.3f"|format(kpi.average_price) }}</div>
+        <div class="label">Prezzo medio &euro;/L</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="value">&euro; {{ "%.2f"|format(kpi.average_monthly_spend) }}</div>
+        <div class="label">Spesa media mensile</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card kpi-card">
+        <div class="value">{{ kpi.entries_count }}</div>
+        <div class="label">Rifornimenti</div>
+      </div>
+    </div>
+    {% if kpi.best_price %}
+    <div class="col-md-3">
+      <div class="card kpi-card text-success">
+        <div class="value">&euro; {{ "%.3f"|format(kpi.best_price[1]) }}</div>
+        <div class="label">Miglior prezzo ({{ kpi.best_price[0].strftime("%d/%m/%Y") }})</div>
+      </div>
+    </div>
+    {% endif %}
+    {% if kpi.worst_price %}
+    <div class="col-md-3">
+      <div class="card kpi-card text-danger">
+        <div class="value">&euro; {{ "%.3f"|format(kpi.worst_price[1]) }}</div>
+        <div class="label">Peggior prezzo ({{ kpi.worst_price[0].strftime("%d/%m/%Y") }})</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Monthly chart -->
+  <div class="card mb-4">
+    <div class="card-body text-center">
+      {% if chart_available %}
+        <img src="/chart" alt="Grafico spesa mensile" class="chart-img">
+      {% else %}
+        <p class="text-muted">Nessun dato disponibile per il grafico</p>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-info text-center">
+    <h4>Nessun rifornimento registrato</h4>
+    <p class="mb-0">
+      <a href="/entries" class="alert-link">Aggiungi il primo rifornimento</a>
+    </p>
+  </div>
+{% endif %}
+{% endblock %}

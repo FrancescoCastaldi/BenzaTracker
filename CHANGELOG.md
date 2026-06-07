@@ -7,24 +7,36 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [2.0.0] — 2026-06-07
 
 ### Added
-- `pyproject.toml` with project metadata, `ruff` and `mypy` configuration
-- `.pre-commit-config.yaml` with `ruff`, `mypy` and whitespace hooks
-- `CHANGELOG.md` following Keep-a-Changelog format
+- `src/` layout with `pyproject.toml` setuptools discovery (`where = ["src"]`)
+- `benzatracker-gui` and `benzatracker-web` entry points in `pyproject.toml`
+- `config.py` — centralized environment variable handling (`DATA_DIR`, `BENZA_MODE`)
+- `store.py` — `Store` protocol + `create_store()` factory with lazy imports
+- `sqlite_store.py` — `SqliteStore` (SQLite persistence, ported from `database.py`)
+- `json_store.py` — `JsonStore` (JSON persistence, ported from `data_store.py`)
+- `models.py` — `RefuelEntry` and `KPIReport` dataclasses separated from store
+- `__main__.py` — unified entry point dispatching CLI/GUI/Web via `BENZA_MODE`
+- Flask web interface with dashboard, entries CRUD, chart, and PDF export
+- Docker support with `Dockerfile` + `docker-compose.yml` (SQLite, port 5000)
+- 3 Jinja2 templates (Bootstrap 5.3 dark theme)
 
 ### Changed
-- `README.md`: full rewrite with CI/Python/License/ruff badges, feature table,
-  installation instructions for macOS, Linux and Windows, project structure and
-  contributing guide
+- Restructured from flat `benzatracker/` package to `src/benzatracker/` layout
+- `DataStore` → `JsonStore` (same API, clearer name)
+- `DatabaseStore` → `SqliteStore` (same API, clearer name)
+- `pdf_report.py` → `pdf.py`, `ReportPDFGenerator` → `ReportGenerator`
+- `compute_kpis()` → `compute()` (shorter name)
+- `pytest.ini` removed, config moved to `pyproject.toml` with `pythonpath = ["src"]`
+- `main.py` removed, replaced by `__main__.py` + module entry points
+- `Dockerfile` now installs via `pip install .` with `src/` layout
+- CI workflow (`python-app.yml`) now lints `src/benzatracker/` instead of `benzatracker/`
+- All tests updated to import from new module paths
 
 ### Fixed
-- `data_store.py`: replaced direct `open("w")` write with atomic
-  write-then-rename (`tempfile.mkstemp` + `os.replace`) to prevent JSON
-  corruption if the process is interrupted mid-write
-- `data_store.py`: added input validation in `RefuelEntry.from_dict` — raises
-  `ValueError` for negative liters, negative amounts or negative price-per-liter
+- `gui.py`: indent fix for `_on_delete` (was nested inside `_clear_form`)
+- `gui.py`: indent fix for `_build_layout`
 
 ---
 

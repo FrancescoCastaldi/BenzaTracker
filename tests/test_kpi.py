@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from datetime import date
 
-from benzatracker.data_store import RefuelEntry
-from benzatracker.kpi import compute_kpis, monthly_spend
+from benzatracker.kpi import compute, monthly_spend
+from benzatracker.models import RefuelEntry
 
 
 def make_entry(day: int, liters: float, amount: float, price: float) -> RefuelEntry:
@@ -15,7 +17,7 @@ def test_compute_kpis_basic():
         RefuelEntry(date(2024, 2, 20), 42, 75.6, 1.8),
     ]
 
-    report = compute_kpis(entries)
+    report = compute(entries)
 
     assert report.total_spent == 208.6
     assert report.total_liters == 117.0
