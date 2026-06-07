@@ -65,10 +65,6 @@ _THEME_DEF = ThemeDefinition(
         "border": C["border"],
         "inputfg": C["text"],
         "inputbg": C["surface2"],
-        "disabledfg": C["text_muted"],
-        "disabledbutton": C["surface"],
-        "disabledtext": C["text_muted"],
-        "cursor": C["text"],
     },
 )
 
