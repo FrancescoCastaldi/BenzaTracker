@@ -16,6 +16,13 @@ dependencies = [
     "flask>=3.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/FrancescoCastaldi/BenzaTracker"
+Repository = "https://github.com/FrancescoCastaldi/BenzaTracker"
+"Bug Tracker" = "https://github.com/FrancescoCastaldi/BenzaTracker/issues"
+Changelog = "https://github.com/FrancescoCastaldi/BenzaTracker/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/FrancescoCastaldi/BenzaTracker/blob/main/README.md"
+
 [project.scripts]
 benzatracker = "benzatracker.cli:run"
 benzatracker-gui = "benzatracker.gui:run"

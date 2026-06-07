@@ -103,9 +103,16 @@ Or use the unified entry point:
 
 ```bash
 python -m benzatracker          # runs CLI by default
-BENZA_MODE=gui python -m benzatracker
-BENZA_MODE=web python -m benzatracker
+python -m benzatracker --gui    # runs GUI
+BENZA_WEB=1 python -m benzatracker  # runs Web (Flask)
 ```
+
+> For a complete reference — including editable install, entry-point shortcuts,
+> Docker, environment variables, data persistence modes, and troubleshooting —
+> see **[LAUNCH_GUIDE.md](LAUNCH_GUIDE.md)**.
+>
+> New contributors should read **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+> All participants must follow our **[Code of Conduct](CODE_OF_CONDUCT.md)**.
 
 ---
 
@@ -124,11 +131,28 @@ Tests cover JSON store, SQLite store, KPI computation, CLI windows, and Flask ro
 
 ```
 BenzaTracker/
+├── .editorconfig               # Editor-agnostic settings
+├── .gitattributes              # Git attributes
+├── .gitignore
+├── .pre-commit-config.yaml     # Pre-commit hooks (ruff, mypy)
+├── CODE_OF_CONDUCT.md          # Contributor Covenant 2.1
+├── CONTRIBUTING.md             # Full contributing guide
+├── SECURITY.md                 # Vulnerability reporting policy
+├── SUPPORT.md                  # Where to get help
+├── LAUNCH_GUIDE.md             # Detailed launch instructions
 ├── Dockerfile
 ├── docker-compose.yml
-├── pyproject.toml              # Build config + ruff/mypy/pytest
+├── pyproject.toml              # Build config + ruff/mypy/pytest + entry points
 ├── requirements.txt
 ├── install_and_run.bat
+├── .github/
+│   ├── workflows/
+│   │   └── python-app.yml      # CI pipeline (3.10–3.12)
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.yml
+│   │   ├── feature_request.yml
+│   │   └── config.yml
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── src/
 │   └── benzatracker/
 │       ├── __init__.py
@@ -148,11 +172,10 @@ BenzaTracker/
 │           ├── index.html
 │           └── entries.html
 ├── tests/
-│   ├── test_data_store.py
-│   ├── test_kpi.py
-│   ├── test_cli_windows.py
-│   ├── test_database.py
-│   └── test_web.py
+│   ├── test_data_store.py      # JsonStore tests
+│   ├── test_kpi.py             # KPI computation tests
+│   ├── test_cli_windows.py     # CLI window tests
+│   └── test_database.py        # SqliteStore tests
 └── data/                       # SQLite database (Docker volume, gitignored)
 ```
 
@@ -160,16 +183,13 @@ BenzaTracker/
 
 ## Contributing
 
-1. Fork the repo
-2. Branch: `git checkout -b feat/your-feature`
-3. Commit with [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`
-4. Open a Pull Request
+See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide (setup, coding style, testing, PR workflow).
 
-```bash
-# Optional: pre-commit hooks
-pip install pre-commit
-pre-commit install
-```
+Quick links:
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Bug Reports](.github/ISSUE_TEMPLATE/bug_report.yml)
+- [Feature Requests](.github/ISSUE_TEMPLATE/feature_request.yml)
+- [Security Policy](SECURITY.md)
 
 ---
 
